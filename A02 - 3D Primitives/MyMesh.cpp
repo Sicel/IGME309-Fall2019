@@ -276,7 +276,25 @@ void MyMesh::GenerateCone(float a_fRadius, float a_fHeight, int a_nSubdivisions,
 	Init();
 
 	// Replace this with your code
-	GenerateCube(a_fRadius * 2.0f, a_v3Color);
+	float rotation = (2 * PI) / a_nSubdivisions;
+
+	for (int i = 1; i <= a_nSubdivisions; i++)
+	{
+		float baseX1 = a_fRadius * cos(rotation * i);
+		float baseZ1 = a_fRadius * sin(rotation * i);
+		float baseX2 = a_fRadius * cos(rotation * (i + 1));
+		float baseZ2 = a_fRadius * sin(rotation * (i + 1));
+		AddTri(
+			glm::vec3(baseX1, 0, baseZ1),
+			glm::vec3(baseX2, 0, baseZ2),
+			glm::vec3(0, 0, 0)
+		);
+		AddTri(
+			glm::vec3(baseX2, 0, baseZ2),
+			glm::vec3(baseX1, 0, baseZ1),
+			glm::vec3(0, a_fHeight, 0)
+		);
+	}
 	// -------------------------------
 
 	// Adding information about color
@@ -300,7 +318,31 @@ void MyMesh::GenerateCylinder(float a_fRadius, float a_fHeight, int a_nSubdivisi
 	Init();
 
 	// Replace this with your code
-	GenerateCube(a_fRadius * 2.0f, a_v3Color);
+	float rotation = (2 * PI) / a_nSubdivisions;
+
+	for (int i = 1; i <= a_nSubdivisions; i++)
+	{
+		float baseX1 = a_fRadius * cos(rotation * i);
+		float baseZ1 = a_fRadius * sin(rotation * i);
+		float baseX2 = a_fRadius * cos(rotation * (i + 1));
+		float baseZ2 = a_fRadius * sin(rotation * (i + 1));
+		AddTri(
+			glm::vec3(baseX1, 0, baseZ1),
+			glm::vec3(baseX2, 0, baseZ2),
+			glm::vec3(0, 0, 0)
+		);
+		AddQuad(
+			glm::vec3(baseX2, 0, baseZ2),
+			glm::vec3(baseX1, 0, baseZ1),
+			glm::vec3(baseX2, a_fHeight, baseZ2),
+			glm::vec3(baseX1, a_fHeight, baseZ1)
+		);
+		AddTri(
+			glm::vec3(baseX2, a_fHeight, baseZ2),
+			glm::vec3(baseX1, a_fHeight, baseZ1),
+			glm::vec3(0, a_fHeight, 0)
+		);
+	}
 	// -------------------------------
 
 	// Adding information about color
@@ -330,7 +372,45 @@ void MyMesh::GenerateTube(float a_fOuterRadius, float a_fInnerRadius, float a_fH
 	Init();
 
 	// Replace this with your code
-	GenerateCube(a_fOuterRadius * 2.0f, a_v3Color);
+	float rotation = (2 * PI) / a_nSubdivisions;
+
+	for (int i = 1; i <= a_nSubdivisions; i++)
+	{
+		float iBaseX1 = a_fInnerRadius * cos(rotation * i);
+		float iBaseZ1 = a_fInnerRadius * sin(rotation * i);
+		float iBaseX2 = a_fInnerRadius * cos(rotation * (i + 1));
+		float iBaseZ2 = a_fInnerRadius * sin(rotation * (i + 1));
+
+		float oBaseX1 = a_fOuterRadius * cos(rotation * i);
+		float oBaseZ1 = a_fOuterRadius * sin(rotation * i);
+		float oBaseX2 = a_fOuterRadius * cos(rotation * (i + 1));
+		float oBaseZ2 = a_fOuterRadius * sin(rotation * (i + 1));
+
+		AddQuad(
+			glm::vec3(iBaseX2, 0, iBaseZ2),
+			glm::vec3(iBaseX1, 0, iBaseZ1),
+			glm::vec3(oBaseX2, 0, oBaseZ2),
+			glm::vec3(oBaseX1, 0, oBaseZ1)
+		);
+		AddQuad(
+			glm::vec3(oBaseX2, 0, oBaseZ2),
+			glm::vec3(oBaseX1, 0, oBaseZ1),
+			glm::vec3(oBaseX2, a_fHeight, oBaseZ2),
+			glm::vec3(oBaseX1, a_fHeight, oBaseZ1)
+		);
+		AddQuad(
+			glm::vec3(oBaseX2, a_fHeight, oBaseZ2),
+			glm::vec3(oBaseX1, a_fHeight, oBaseZ1),
+			glm::vec3(iBaseX2, a_fHeight, iBaseZ2),
+			glm::vec3(iBaseX1, a_fHeight, iBaseZ1)
+		);
+		AddQuad(
+			glm::vec3(iBaseX2, a_fHeight, iBaseZ2),
+			glm::vec3(iBaseX1, a_fHeight, iBaseZ1),
+			glm::vec3(iBaseX2, 0, iBaseZ2),
+			glm::vec3(iBaseX1, 0, iBaseZ1)
+		);
+	}
 	// -------------------------------
 
 	// Adding information about color
@@ -387,7 +467,38 @@ void MyMesh::GenerateSphere(float a_fRadius, int a_nSubdivisions, vector3 a_v3Co
 	Init();
 
 	// Replace this with your code
-	GenerateCube(a_fRadius * 2.0f, a_v3Color);
+	float rotation = (2 * PI) / a_nSubdivisions;
+
+	for (int i = 1; i <= a_nSubdivisions; i++)
+	{
+		float yPos = a_fRadius - ((2 * a_fRadius) / i);
+		float nextYPos = a_fRadius - ((2 * a_fRadius) / (i + 1));
+
+		float eRadius = a_fRadius / (a_fRadius - yPos);
+
+		float baseX1 = eRadius * cos(rotation * i);
+		float baseZ1 = eRadius * sin(rotation * i);
+		float baseX2 = eRadius * cos(rotation * (i + 1));
+		float baseZ2 = eRadius * sin(rotation * (i + 1));
+
+		AddTri(
+			glm::vec3(baseX1, nextYPos, baseZ1),
+			glm::vec3(baseX2, nextYPos, baseZ2),
+			glm::vec3(0, yPos, 0)
+		);
+		/*
+		AddQuad(
+			glm::vec3(baseX2, yPos, baseZ2),
+			glm::vec3(baseX1, yPos, baseZ1),
+			glm::vec3(baseX2, nextYPos, baseZ2),
+			glm::vec3(baseX1, nextYPos, baseZ1)
+		);
+		AddTri(
+			glm::vec3(baseX2, a_fHeight, baseZ2),
+			glm::vec3(baseX1, a_fHeight, baseZ1),
+			glm::vec3(0, a_fHeight, 0)
+		);*/
+	}
 	// -------------------------------
 
 	// Adding information about color

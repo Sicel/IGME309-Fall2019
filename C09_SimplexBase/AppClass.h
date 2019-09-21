@@ -10,6 +10,9 @@ Date: 2017/05
 #include "ControllerConfiguration.h"
 #include "imgui\ImGuiObject.h"
 
+// Forward Declaring a class
+class MyMesh;
+
 class Application
 {
 	String m_sProgrammer = "Alberto Bobadilla - labigm@rit.edu";
@@ -34,6 +37,10 @@ private:
 	Simplex::CameraManager* m_pCameraMngr = nullptr; //Singleton for the camera manager
 	ControllerInput* m_pController[8]; //Controller
 	uint m_uActCont = 0; //Active Controller of the Application
+
+	MyMesh* m_pTriangle = nullptr;
+	MyMesh* m_pQuad = nullptr;
+	MyMesh* m_pCube = nullptr;
 
 public:
 #pragma region Constructor / Run / Destructor

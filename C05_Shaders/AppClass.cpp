@@ -1,8 +1,13 @@
 #include "AppClass.h"
 //Application Class
+// Constructors
 AppClass::AppClass(std::string a_windowName) : m_sWindowName(a_windowName) {}
 AppClass::AppClass(AppClass const& input) {}
+
+// = override
 AppClass& AppClass::operator=(AppClass const& input) { return *this; }
+
+// Destrctor
 AppClass::~AppClass(void){ Release(); }
 void AppClass::Run(void)
 {
