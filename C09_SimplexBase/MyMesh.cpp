@@ -229,7 +229,7 @@ void MyMesh::InitQuad()
 	glBindVertexArray(m_uVAO);
 	// Consists of three vertices
 
-	float size = 0.5f;
+	float size = 0.25f;
 
 	// Vetex 1 (Top Left)
 	vertex vertexTopLeft;
@@ -284,18 +284,24 @@ void MyMesh::Draw()
 {
 	glBindVertexArray(m_uVAO);
 
+	glm::vec3 ptOrigin = glm::vec3(0.0f, 0.0f, 0.0f);
+
+	ptOrigin += glm::vec3(1.0f, 0.0f, 0.0f);
+
 	// Used to get window size and create a projection matrix based on that
 	auto pCameraMngr = CameraManager::GetInstance();
 
 	glm::mat4 m4Projection = pCameraMngr->GetProjectionMatrix();						// projection matrix
 	glm::mat4 m4View = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -2.0f));	// view matrix
-	glm::mat4 m4Model = glm::mat4(1.0f);												// model matrix
+	//glm::mat4 m4Model = glm::mat4(1.0f);												// model matrix
+
+	glm::mat4 m4Model = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -2.0f));	// model matrix
 
 	static float theta = 0.0f;
 	theta += 0.01f;
 
-	m4Model = glm::rotate(m4Model, theta, glm::vec3(0.0f, 1.0f, 0.0f));
-	m4Model = glm::rotate(m4Model, theta, glm::vec3(1.0f, 0.0f, 0.0f));
+	//m4Model = glm::rotate(m4Model, theta, glm::vec3(0.0f, 1.0f, 0.0f));
+	//m4Model = glm::rotate(m4Model, theta, glm::vec3(1.0f, 0.0f, 0.0f));
 
 	GLuint MVP = glGetUniformLocation(m_uShaderProgramID, "transform");
 	glUniformMatrix4fv(MVP, 1, GL_FALSE, glm::value_ptr(m4Projection * m4View * m4Model));

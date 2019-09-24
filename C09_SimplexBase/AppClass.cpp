@@ -7,8 +7,8 @@ void Application::InitVariables(void)
 	m_sProgrammer = "Cristian Cordoba - cxc9597@rit.edu";
 
 	//m_pTriangle = MyMesh::Make(MyMesh::type::TRIANGLE, 0.5f);
-	//m_pQuad = MyMesh::Make(MyMesh::type::QUAD, 0.5f);
-	m_pCube = MyMesh::Make(MyMesh::type::CUBE, 0.5f);
+	m_pQuad = MyMesh::Make(MyMesh::type::QUAD, 0.25f);
+	//m_pCube = MyMesh::Make(MyMesh::type::CUBE, 0.5f);
 
 	srand(time(NULL));
 }

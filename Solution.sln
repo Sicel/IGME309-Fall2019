@@ -117,6 +117,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "E10 - EntityManager", "E10 
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "E03 - OpenGL Shaders", "\\banner.main.ad.rit.edu\students\cxc9597\IGMProfile\Documents\DSA2Repo\E03 - OpenGL Shaders\C05_Shaders.vcxproj", "{214ED205-E03B-420A-AA30-5F622BA97223}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "E05 - Transformations", "E05 - Transformations\C11_TranslationAndScale.vcxproj", "{BE82991B-3CBE-410A-BCF5-337CE5BBECC6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x86 = Debug|x86
@@ -317,6 +319,10 @@ Global
 		{214ED205-E03B-420A-AA30-5F622BA97223}.Debug|x86.Build.0 = Debug|Win32
 		{214ED205-E03B-420A-AA30-5F622BA97223}.Release|x86.ActiveCfg = Release|Win32
 		{214ED205-E03B-420A-AA30-5F622BA97223}.Release|x86.Build.0 = Release|Win32
+		{BE82991B-3CBE-410A-BCF5-337CE5BBECC6}.Debug|x86.ActiveCfg = Debug|Win32
+		{BE82991B-3CBE-410A-BCF5-337CE5BBECC6}.Debug|x86.Build.0 = Debug|Win32
+		{BE82991B-3CBE-410A-BCF5-337CE5BBECC6}.Release|x86.ActiveCfg = Release|Win32
+		{BE82991B-3CBE-410A-BCF5-337CE5BBECC6}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -370,6 +376,7 @@ Global
 		{9557AEB2-A186-4645-B8D0-678D133C2EFA} = {78C06654-E155-40A8-97F7-7BA1E50977C5}
 		{870B329D-6DED-48D2-8E86-0893E3BB8DAB} = {78C06654-E155-40A8-97F7-7BA1E50977C5}
 		{214ED205-E03B-420A-AA30-5F622BA97223} = {78C06654-E155-40A8-97F7-7BA1E50977C5}
+		{BE82991B-3CBE-410A-BCF5-337CE5BBECC6} = {78C06654-E155-40A8-97F7-7BA1E50977C5}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {A36545A6-DAAA-4856-BDB7-57C29F88BC6B}
