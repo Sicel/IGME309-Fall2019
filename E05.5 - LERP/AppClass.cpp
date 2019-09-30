@@ -55,11 +55,21 @@ void Application::Display(void)
 	vector3 v3CurrentPos;
 	
 
-
-
-
 	//your code goes here
-	v3CurrentPos = vector3(0.0f, 0.0f, 0.0f);
+	static int currentStop = 0;
+	vector3 v3StartPos = m_stopsList[currentStop];
+	vector3 v3EndPos = m_stopsList[currentStop + 1 == m_stopsList.size() ? 0:currentStop+1];
+
+	float timeBetweenStops = 2;
+	float percentage = MapValue(fTimer, 0.0f, timeBetweenStops, 0.0f, 1.0f);
+
+	v3CurrentPos = glm::lerp(v3StartPos, v3EndPos, percentage);
+
+	if (percentage >= 1.0f)
+	{
+		currentStop = currentStop >= m_stopsList.size() - 1 ? 0 : currentStop + 1;
+		fTimer = m_pSystem->GetDeltaTime(uClock);
+	}
 	//-------------------
 	
 

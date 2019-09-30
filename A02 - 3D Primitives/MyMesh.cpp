@@ -442,7 +442,36 @@ void MyMesh::GenerateTorus(float a_fOuterRadius, float a_fInnerRadius, int a_nSu
 	Init();
 
 	// Replace this with your code
-	GenerateCube(a_fOuterRadius * 2.0f, a_v3Color);
+	float rotationXZ = (2 * PI) / a_nSubdivisionsA;
+	float rotationXY = (2 * PI) / a_nSubdivisionsB;
+	float ringRadius = a_fOuterRadius - a_fInnerRadius;
+	float centerOfRing = a_fInnerRadius + ringRadius;
+
+	for (int i = 1; i <= a_nSubdivisionsA; i++)
+	{
+		float centerX1 = centerOfRing * cos(rotationXZ * i);
+		float centerZ1 = centerOfRing * sin(rotationXZ * i);
+		float centerX2 = centerOfRing * cos(rotationXZ * (i + 1));
+		float centerZ2 = centerOfRing * sin(rotationXZ * (i + 1));
+		for (int j = 1; j <= a_nSubdivisionsB; j++)
+		{
+			float ringX1 = ringRadius * cos(rotationXY * j);
+			float ringY1 = ringRadius * sin(rotationXY * j);
+			float ringX2 = ringRadius * cos(rotationXY * (j + 1));
+			float ringY2 = ringRadius * sin(rotationXY * (j + 1));
+			float ringZ1 = ringX1 + centerZ1;
+			float ringZ2 = ringX2 + centerZ2;
+			ringX1 += centerX1;
+			ringX2 += centerX2;
+
+			AddQuad(
+				vector3(ringX2, ringY1, centerZ2),
+				vector3(ringX1, ringY1, centerZ1),
+				vector3(ringX1, ringY2, centerZ1),
+				vector3(ringX2, ringY2, centerZ2)
+			);
+		}
+	}
 	// for (int i = 0; i < a_n)
 	// -------------------------------
 

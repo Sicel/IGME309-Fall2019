@@ -23,6 +23,7 @@ void Application::InitVariables(void)
 		m_uOrbits = 7;
 
 	float fSize = 1.0f; //initial size of orbits
+	float radius = 0.95f; //initial radius of toruses
 
 	//creating a color using the spectrum 
 	uint uColor = 650; //650 is Red
@@ -36,8 +37,20 @@ void Application::InitVariables(void)
 	{
 		vector3 v3Color = WaveLengthToRGB(uColor); //calculate color based on wavelength
 		m_shapeList.push_back(m_pMeshMngr->GenerateTorus(fSize, fSize - 0.1f, 3, i, v3Color)); //generate a custom torus and add it to the meshmanager
+
+		std::vector<vector3> stopList;
+		float radians = (2 * PI) / i;
+		for (int j = 0; j < i; j++)
+		{
+			float x = radius * cos(j * radians);
+			float y = radius * sin(j * radians);
+			stopList.push_back(vector3(x, y, 0));
+		} 
 		fSize += 0.5f; //increment the size for the next orbit
+		radius += 0.5f;
+
 		uColor -= static_cast<uint>(decrements); //decrease the wavelength
+		stopLists.push_back(stopList);
 	}
 }
 void Application::Update(void)
@@ -59,18 +72,37 @@ void Application::Display(void)
 	matrix4 m4View = m_pCameraMngr->GetViewMatrix(); //view Matrix
 	matrix4 m4Projection = m_pCameraMngr->GetProjectionMatrix(); //Projection Matrix
 	matrix4 m4Offset = IDENTITY_M4; //offset of the orbits, starts as the global coordinate system
+	static float fTimer = 0;
+	static uint uClock = m_pSystem->GenClock(); //generate a new clock for that timer
+	fTimer += m_pSystem->GetDeltaTime(uClock); //get the delta time for that timer
+
 	/*
 		The following offset will orient the orbits as in the demo, start without it to make your life easier.
 	*/
 	//m4Offset = glm::rotate(IDENTITY_M4, 1.5708f, AXIS_Z);
+	static std::vector<int> currentStops;
+
+	float timeBetweenStops = 0.5f;
+	float percentage = MapValue(fTimer, 0.0f, timeBetweenStops, 0.0f, 1.0f);
 
 	// draw a shapes
 	for (uint i = 0; i < m_uOrbits; ++i)
 	{
+		currentStops.push_back(0);
 		m_pMeshMngr->AddMeshToRenderList(m_shapeList[i], glm::rotate(m4Offset, 1.5708f, AXIS_X));
+		std::vector<vector3> currentList = stopLists[i];
 
 		//calculate the current position
-		vector3 v3CurrentPos = ZERO_V3;
+		vector3 v3StartPos = currentList[currentStops[i]];
+		vector3 v3EndPos = currentList[currentStops[i] + 1 >= currentList.size() ? 0 : currentStops[i] + 1];
+		vector3 v3CurrentPos = glm::lerp(v3StartPos, v3EndPos, percentage);
+
+		if (percentage >= 1.0f)
+		{
+			currentStops[i] = currentStops[i] >= currentList.size() - 1 ? 0 : currentStops[i] + 1;
+			fTimer = m_pSystem->GetDeltaTime(uClock);
+		}
+
 		matrix4 m4Model = glm::translate(m4Offset, v3CurrentPos);
 
 		//draw spheres
