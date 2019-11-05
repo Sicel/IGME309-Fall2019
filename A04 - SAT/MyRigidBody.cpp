@@ -264,8 +264,9 @@ void MyRigidBody::AddToRenderList(void)
 			m_pMeshMngr->AddWireCubeToRenderList(glm::translate(m_m4ToWorld, m_v3Center) * glm::scale(m_v3HalfWidth * 2.0f), m_v3ColorColliding);
 		else
 			m_pMeshMngr->AddWireCubeToRenderList(glm::translate(m_m4ToWorld, m_v3Center) * glm::scale(m_v3HalfWidth * 2.0f), m_v3ColorColliding);
-		m_pMeshMngr->AddWireCubeToRenderList(glm::translate(m_m4ToWorld, m_v3Center) * glm::scale(m_v3HalfExtentsWorld), m_v3ColorColliding);
-		std::cout << axes[0][0] << ", " << axes[0].x << ", " << axes[0].z << std::endl;
+		// For debugging
+		//m_pMeshMngr->AddWireCubeToRenderList(glm::translate(m_m4ToWorld, m_v3Center) * glm::scale(m_v3HalfExtentsWorld), m_v3ColorColliding);
+		//std::cout << axes[0][0] << ", " << axes[0].x << ", " << axes[0].z << std::endl;
 	}
 	if (m_bVisibleARBB)
 	{

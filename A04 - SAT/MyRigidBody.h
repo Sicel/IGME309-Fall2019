@@ -40,7 +40,7 @@ class MyRigidBody
 
 	vector4 axes[3]; // X- , Y-, Z-axes
 	vector4 m_v4HalfExtentsWorld; // Halfwidth in world space
-	vector3 m_v3HalfExtentsWorld; // For testing purposes
+	vector3 m_v3HalfExtentsWorld; // For debugging purposes
 
 public:
 	/*
