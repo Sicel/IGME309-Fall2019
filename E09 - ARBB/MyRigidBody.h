@@ -20,11 +20,14 @@ class MyRigidBody
 	bool m_bVisibleARBB = true; //Visibility of axis (Re)aligned bounding box
 
 	float m_fRadius = 0.0f; //Radius
+	float m_fRadius2 = 0.0f; //Radius2
 
 	vector3 m_v3ColorColliding = C_RED; //Color when colliding
 	vector3 m_v3ColorNotColliding = C_WHITE; //Color when not colliding
 
 	vector3 m_v3Center = ZERO_V3; //center point in local space
+	vector3 m_v3CenterG = ZERO_V3; //center point in local space
+
 	vector3 m_v3MinL = ZERO_V3; //minimum coordinate in local space (for OBB)
 	vector3 m_v3MaxL = ZERO_V3; //maximum coordinate in local space (for OBB)
 
@@ -32,7 +35,15 @@ class MyRigidBody
 	vector3 m_v3MaxG = ZERO_V3; //maximum coordinate in global space (for ARBB)
 
 	vector3 m_v3HalfWidth = ZERO_V3; //half the size of the Oriented Bounding Box
-	vector3 m_v3ARBBSize = ZERO_V3;// size of the Axis (Re)Alligned Bounding Box
+
+	vector3 m_v3MinLR = ZERO_V3; //minimum coordinate in local space (for OBB)
+	vector3 m_v3MaxLR = ZERO_V3; //maximum coordinate in local space (for OBB)
+
+	vector3 m_v3MinGR = ZERO_V3; //minimum coordinate in global space (for ARBB)
+	vector3 m_v3MaxGR = ZERO_V3; //maximum coordinate in global space (for ARBB)
+
+	vector3 m_v3ARBBSize = ZERO_V3; //size of the Axis (Re)Alligned Bounding Box
+	vector3 m_v3CenterR = ZERO_V3; //center point in local space
 
 	matrix4 m_m4ToWorld = IDENTITY_M4; //Matrix that will take us from local to world coordinate
 

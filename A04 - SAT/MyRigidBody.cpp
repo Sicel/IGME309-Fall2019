@@ -263,7 +263,9 @@ void MyRigidBody::AddToRenderList(void)
 		if (m_CollidingRBSet.size() > 0)
 			m_pMeshMngr->AddWireCubeToRenderList(glm::translate(m_m4ToWorld, m_v3Center) * glm::scale(m_v3HalfWidth * 2.0f), m_v3ColorColliding);
 		else
-			m_pMeshMngr->AddWireCubeToRenderList(glm::translate(m_m4ToWorld, m_v3Center) * glm::scale(m_v3HalfWidth * 2.0f), m_v3ColorNotColliding);
+			m_pMeshMngr->AddWireCubeToRenderList(glm::translate(m_m4ToWorld, m_v3Center) * glm::scale(m_v3HalfWidth * 2.0f), m_v3ColorColliding);
+		m_pMeshMngr->AddWireCubeToRenderList(glm::translate(m_m4ToWorld, m_v3Center) * glm::scale(m_v3HalfExtentsWorld), m_v3ColorColliding);
+		std::cout << axes[0][0] << ", " << axes[0].x << ", " << axes[0].z << std::endl;
 	}
 	if (m_bVisibleARBB)
 	{
@@ -287,6 +289,142 @@ uint MyRigidBody::SAT(MyRigidBody* const a_pOther)
 	(eSATResults::SAT_NONE has a value of 0)
 	*/
 
+	axes[0] = glm::vec4(AXIS_X, 1.0f) * m_m4ToWorld;
+	axes[1] = glm::vec4(AXIS_Y, 1.0f) * m_m4ToWorld;
+	axes[2] = glm::vec4(AXIS_Z, 1.0f) * m_m4ToWorld;
+
+	m_v3HalfExtentsWorld = glm::vec4(m_v3HalfWidth, 1.0f) * m_m4ToWorld;
+
+	m_v4HalfExtentsWorld = glm::vec4(m_v3HalfWidth, 1.0f) * m_m4ToWorld;
+	
+	// Code taken from "Real Time Collision Deetection" Ch.4.4
+	float ra, rb;
+	matrix3 r, absR;
+
+	// Rotation matrix expressing a_pOther in current rigidbody's coordinate frame
+	for (int i = 0; i < 3; i++)
+	{
+		for (int j = 0; j < 3; j++)
+		{
+			r[i][j] = glm::dot(axes[i], a_pOther->axes[j]);
+		}
+	}
+
+	// translation vector
+	vector4 translation = glm::vec4(a_pOther->GetCenterGlobal() - GetCenterGlobal(), 1.0f);
+	// Bring translation into rigidbody's frame
+	translation = vector4(glm::dot(translation, axes[0]), glm::dot(translation, axes[2]), glm::dot(translation, axes[2]), 1.0f);
+
+
+	// Compute common subexpressions
+	for (int i = 0; i < 3; i++)
+	{
+		for (int j = 0; j < 3; j++)
+		{
+			absR[i][j] = glm::abs(r[i][j]);// + glm::epsilon();
+		}
+	}
+
+	// Testing all 15 axes
+	// Three coordinates of this rigidbody
+	for (int i = 0; i < 3; i++)
+	{
+		ra = m_v4HalfExtentsWorld[i];
+		rb = a_pOther->m_v4HalfExtentsWorld.x * absR[i][0] + a_pOther->m_v4HalfExtentsWorld.y * absR[i][1] + a_pOther->m_v4HalfExtentsWorld.z * absR[i][2];
+		if (glm::abs(translation[i]) > ra + rb)
+		{
+			return 0;
+		}
+	}
+
+	// Three coordinates of other rigidbody
+	for (int i = 0; i < 3; i++)
+	{
+		ra = m_v4HalfExtentsWorld.x * absR[0][i] + m_v4HalfExtentsWorld.y * absR[1][i] + m_v4HalfExtentsWorld.z * absR[2][i];
+		rb = a_pOther->m_v4HalfExtentsWorld[i];
+		if (glm::abs(translation[0] * r[0][i] + translation[1] * r[1][i] + translation[2] * r[2][i]) > ra + rb)
+		{
+			return 0;
+		}
+	}
+	#pragma region Cross X
+	// This.X x Other.X
+	ra = m_v4HalfExtentsWorld[1] * absR[2][0] + m_v4HalfExtentsWorld[2] * absR[1][0];
+	rb = a_pOther->m_v4HalfExtentsWorld[1] * absR[0][2] + a_pOther->m_v4HalfExtentsWorld[2] * absR[0][1];
+	if (glm::abs(translation[2] * r[1][0] - translation[1] * r[2][0]) > ra + rb)
+	{
+		return 0;
+	}
+
+	// This.X x Other.Y
+	ra = m_v4HalfExtentsWorld[1] * absR[2][1] + m_v4HalfExtentsWorld[2] * absR[1][1];
+	rb = a_pOther->m_v4HalfExtentsWorld[0] * absR[0][2] + a_pOther->m_v4HalfExtentsWorld[2] * absR[0][0];
+	if (glm::abs(translation[2] * r[1][1] - translation[1] * r[2][1]) > ra + rb)
+	{
+		return 0;
+	}
+
+	// This.X x Other.Z
+	ra = m_v4HalfExtentsWorld[1] * absR[2][2] + m_v4HalfExtentsWorld[2] * absR[1][2];
+	rb = a_pOther->m_v4HalfExtentsWorld[0] * absR[0][1] + a_pOther->m_v4HalfExtentsWorld[1] * absR[0][0];
+	if (glm::abs(translation[2] * r[1][2] - translation[1] * r[2][2]) > ra + rb)
+	{
+		return 0;
+	}
+	#pragma endregion
+
+	#pragma region Cross Y
+	// This.Y x Other.X
+	ra = m_v4HalfExtentsWorld[0] * absR[2][0] + m_v4HalfExtentsWorld[2] * absR[0][0];
+	rb = a_pOther->m_v4HalfExtentsWorld[1] * absR[1][2] + a_pOther->m_v4HalfExtentsWorld[2] * absR[1][1];
+	if (glm::abs(translation[0] * r[2][0] - translation[2] * r[1][1]) > ra + rb)
+	{
+		return 0;
+	}
+
+	// This.Y x Other.Y
+	ra = m_v4HalfExtentsWorld[0] * absR[2][1] + m_v4HalfExtentsWorld[2] * absR[0][1];
+	rb = a_pOther->m_v4HalfExtentsWorld[0] * absR[1][2] + a_pOther->m_v4HalfExtentsWorld[2] * absR[1][0];
+	if (glm::abs(translation[0] * r[2][1] - translation[2] * r[0][1]) > ra + rb)
+	{
+		return 0;
+	}
+
+	// This.Y x Other.Z
+	ra = m_v4HalfExtentsWorld[0] * absR[2][2] + m_v4HalfExtentsWorld[2] * absR[0][2];
+	rb = a_pOther->m_v4HalfExtentsWorld[0] * absR[1][1] + a_pOther->m_v4HalfExtentsWorld[1] * absR[1][0];
+	if (glm::abs(translation[0] * r[2][2] - translation[2] * r[0][2]) > ra + rb)
+	{
+		return 0;
+	}
+	#pragma endregion
+
+	#pragma region Cross Z
+	// This.Z x Other.X
+	ra = m_v4HalfExtentsWorld[0] * absR[1][0] + m_v4HalfExtentsWorld[1] * absR[0][0];
+	rb = a_pOther->m_v4HalfExtentsWorld[1] * absR[2][2] + a_pOther->m_v4HalfExtentsWorld[2] * absR[2][1];
+	if (glm::abs(translation[1] * r[0][0] - translation[0] * r[1][0]) > ra + rb)
+	{
+		return 0;
+	}
+
+	// This.Z x Other.Y
+	ra = m_v4HalfExtentsWorld[0] * absR[1][1] + m_v4HalfExtentsWorld[1] * absR[0][1];
+	rb = a_pOther->m_v4HalfExtentsWorld[0] * absR[2][2] + a_pOther->m_v4HalfExtentsWorld[2] * absR[2][0];
+	if (glm::abs(translation[1] * r[0][1] - translation[0] * r[1][1]) > ra + rb)
+	{
+		return 0;
+	}
+
+	// This.Z x Other.Z
+	ra = m_v4HalfExtentsWorld[0] * absR[1][2] + m_v4HalfExtentsWorld[1] * absR[0][2];
+	rb = a_pOther->m_v4HalfExtentsWorld[0] * absR[2][1] + a_pOther->m_v4HalfExtentsWorld[1] * absR[2][0];
+	if (glm::abs(translation[1] * r[0][2] - translation[0] * r[1][2]) > ra + rb)
+	{
+		return 0;
+	}
+	#pragma endregion
+
 	//there is no axis test that separates this two objects
-	return eSATResults::SAT_NONE;
+	return 1;
 }
