@@ -43,6 +43,7 @@ class MyRigidBody
 	vector3 m_v3HalfExtentsWorld; // For debugging purposes
 
 public:
+	vector3 v3Corner[8];
 	/*
 	Usage: Constructor
 	Arguments: std::vector<vector3> a_pointList -> list of points to make the Rigid Body for

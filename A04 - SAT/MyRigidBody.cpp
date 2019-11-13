@@ -86,7 +86,6 @@ void MyRigidBody::SetModelMatrix(matrix4 a_m4ModelMatrix)
 	m_m4ToWorld = a_m4ModelMatrix;
 
 	//Calculate the 8 corners of the cube
-	vector3 v3Corner[8];
 	//Back square
 	v3Corner[0] = m_v3MinL;
 	v3Corner[1] = vector3(m_v3MaxL.x, m_v3MinL.y, m_v3MinL.z);
@@ -98,7 +97,6 @@ void MyRigidBody::SetModelMatrix(matrix4 a_m4ModelMatrix)
 	v3Corner[5] = vector3(m_v3MaxL.x, m_v3MinL.y, m_v3MaxL.z);
 	v3Corner[6] = vector3(m_v3MinL.x, m_v3MaxL.y, m_v3MaxL.z);
 	v3Corner[7] = m_v3MaxL;
-
 	//Place them in world space
 	for (uint uIndex = 0; uIndex < 8; ++uIndex)
 	{
@@ -289,7 +287,7 @@ uint MyRigidBody::SAT(MyRigidBody* const a_pOther)
 	Simplex that might help you [eSATResults] feel free to use it.
 	(eSATResults::SAT_NONE has a value of 0)
 	*/
-
+	#pragma region Using Real Time Collision Detection Book
 	axes[0] = glm::vec4(AXIS_X, 1.0f) * m_m4ToWorld;
 	axes[1] = glm::vec4(AXIS_Y, 1.0f) * m_m4ToWorld;
 	axes[2] = glm::vec4(AXIS_Z, 1.0f) * m_m4ToWorld;
@@ -426,6 +424,7 @@ uint MyRigidBody::SAT(MyRigidBody* const a_pOther)
 	}
 	#pragma endregion
 
+	#pragma endregion
 	//there is no axis test that separates this two objects
 	return 1;
 }
