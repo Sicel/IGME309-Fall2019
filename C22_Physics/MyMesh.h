@@ -5,11 +5,21 @@ Date: 2017/05
 #ifndef __MYMESH_H_
 #define __MYMESH_H_
 
-#include "Definitions.h"
-#include "MyCamera.h"
+#define USEBASICX
+#ifdef USEBASICX
+#include "BasicX\BasicX.h"
+using namespace BasicX;
+#else
+#include "Simplex\Simplex.h"
+using namespace Simplex;
+#endif // USEBASICX
 
-namespace Simplex
-{
+#include "SFML\Window.hpp"
+#include "SFML\Graphics.hpp"
+#include "SFML\OpenGL.hpp"
+
+#include "ControllerConfiguration.h"
+#include "imgui\ImGuiObject.h"
 
 class MyMesh
 {
@@ -18,12 +28,11 @@ class MyMesh
 	GLuint m_VAO = 0;			//OpenGL Vertex Array Object
 	GLuint m_VBO = 0;			//OpenGL Vertex Array Object
 
-	ShaderManager* m_pShaderMngr = nullptr;	//Shader Manager
-protected:
-
 	std::vector<vector3> m_lVertex;		//Composed vertex array
 	std::vector<vector3> m_lVertexPos;	//List of Vertices
 	std::vector<vector3> m_lVertexCol;	//List of Colors
+
+	ShaderManager* m_pShaderMngr = nullptr;	//Shader Manager
 
 public:
 	/*
@@ -107,21 +116,6 @@ public:
 	OUTPUT: ---
 	*/
 	void Render(matrix4 a_mProjection, matrix4 a_mView, matrix4 a_mModel);
-	/*
-	USAGE: Renders the mesh on the specified position by the
-	provided camera view and projection
-	ARGUMENTS: MyCamera a_mCamera -> the camera I want to see my scene from
-	OUTPUT: ---
-	*/
-	void Render(MyCamera* a_pCamera, matrix4 a_mModel);
-	/*
-	USAGE: Will render this mesh a_ToWorlsList size times
-	ARGUMENTS:
-	-	MyCamera* a_pCamera
-	-	std::vector<matrix4> a_ToWorldList
-	OUTPUT: ---
-	*/
-	void Render(MyCamera* a_pCamera, std::vector<matrix4> a_ToWorldList);
 	/*
 	USAGE: Adds a tri to the list points in the buffer to be compiled
 	//C
@@ -219,8 +213,6 @@ public:
 	void GenerateSphere(float a_fRadius, int a_nSubdivisions, vector3 a_v3Color = C_WHITE);
 #pragma endregion
 };
-
-}//namespace Simplex
 
 #endif //__MYMESH_H_
 

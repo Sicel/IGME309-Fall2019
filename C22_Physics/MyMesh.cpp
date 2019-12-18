@@ -1,6 +1,4 @@
 #include "MyMesh.h"
-using namespace Simplex;
-
 void MyMesh::Init(void)
 {
 	m_bBinded = false;
@@ -119,8 +117,38 @@ void MyMesh::CompileOpenGL3X(void)
 
 	glBindVertexArray(0); // Unbind VAO
 }
+void MyMesh::Render(matrix4 a_mProjection, matrix4 a_mView, matrix4 a_mModel)
+{
+	// Use the buffer and shader
+	GLuint nShader = m_pShaderMngr->GetShaderID("Basic");
+	glUseProgram(nShader); 
 
+	//Bind the VAO of this object
+	glBindVertexArray(m_VAO);
 
+	// Get the GPU variables by their name and hook them to CPU variables
+	GLuint MVP = glGetUniformLocation(nShader, "MVP");
+	GLuint wire = glGetUniformLocation(nShader, "wire");
+
+	//Final Projection of the Camera
+	matrix4 m4MVP = a_mProjection * a_mView * a_mModel;
+	glUniformMatrix4fv(MVP, 1, GL_FALSE, glm::value_ptr(m4MVP));
+	
+	//Solid
+	glUniform3f(wire, -1.0f, -1.0f, -1.0f);
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	glDrawArrays(GL_TRIANGLES, 0, m_uVertexCount);  
+
+	//Wire
+	glUniform3f(wire, 1.0f, 0.0f, 1.0f);
+	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	glEnable(GL_POLYGON_OFFSET_LINE);
+	glPolygonOffset(-1.f, -1.f);
+	glDrawArrays(GL_TRIANGLES, 0, m_uVertexCount);
+	glDisable(GL_POLYGON_OFFSET_LINE);
+
+	glBindVertexArray(0);// Unbind VAO so it does not get in the way of other objects
+}
 void MyMesh::AddTri(vector3 a_vBottomLeft, vector3 a_vBottomRight, vector3 a_vTopLeft)
 {
 	//C
@@ -134,7 +162,7 @@ void MyMesh::AddTri(vector3 a_vBottomLeft, vector3 a_vBottomRight, vector3 a_vTo
 void MyMesh::AddQuad(vector3 a_vBottomLeft, vector3 a_vBottomRight, vector3 a_vTopLeft, vector3 a_vTopRight)
 {
 	//C--D
-	//| \|
+	//|  |
 	//A--B
 	//This will make the triangle A->B->C and then the triangle C->B->D
 	AddVertexPosition(a_vBottomLeft);
@@ -158,17 +186,17 @@ void MyMesh::GenerateCube(float a_fSize, vector3 a_v3Color)
 	//|  |
 	//0--1
 
-	vector3 point0(-fValue, -fValue, fValue); //0
-	vector3 point1(fValue, -fValue, fValue); //1
-	vector3 point2(fValue, fValue, fValue); //2
+	vector3 point0(-fValue,-fValue, fValue); //0
+	vector3 point1( fValue,-fValue, fValue); //1
+	vector3 point2( fValue, fValue, fValue); //2
 	vector3 point3(-fValue, fValue, fValue); //3
 
-	vector3 point4(-fValue, -fValue, -fValue); //4
-	vector3 point5(fValue, -fValue, -fValue); //5
-	vector3 point6(fValue, fValue, -fValue); //6
-	vector3 point7(-fValue, fValue, -fValue); //7
+	vector3 point4(-fValue,-fValue,-fValue); //4
+	vector3 point5( fValue,-fValue,-fValue); //5
+	vector3 point6( fValue, fValue,-fValue); //6
+	vector3 point7(-fValue, fValue,-fValue); //7
 
-											  //F
+	//F
 	AddQuad(point0, point1, point3, point2);
 
 	//B
@@ -209,7 +237,7 @@ void MyMesh::GenerateCuboid(vector3 a_v3Dimensions, vector3 a_v3Color)
 	vector3 point6(v3Value.x, v3Value.y, -v3Value.z); //6
 	vector3 point7(-v3Value.x, v3Value.y, -v3Value.z); //7
 
-													   //F
+	//F
 	AddQuad(point0, point1, point3, point2);
 
 	//B
@@ -248,11 +276,25 @@ void MyMesh::GenerateCone(float a_fRadius, float a_fHeight, int a_nSubdivisions,
 	Init();
 
 	// Replace this with your code
-	Mesh* pMesh = new Mesh();
-	pMesh->GenerateCone(a_fRadius, a_fHeight, a_nSubdivisions, a_v3Color);
-	m_lVertexPos = pMesh->GetVertexList();
-	m_uVertexCount = m_lVertexPos.size();
-	SafeDelete(pMesh);
+	float rotation = (2 * PI) / a_nSubdivisions;
+
+	for (int i = 1; i <= a_nSubdivisions; i++)
+	{
+		float baseX1 = a_fRadius * cos(rotation * i);
+		float baseZ1 = a_fRadius * sin(rotation * i);
+		float baseX2 = a_fRadius * cos(rotation * (i + 1));
+		float baseZ2 = a_fRadius * sin(rotation * (i + 1));
+		AddTri(
+			glm::vec3(baseX1, 0, baseZ1),
+			glm::vec3(baseX2, 0, baseZ2),
+			glm::vec3(0, 0, 0)
+		);
+		AddTri(
+			glm::vec3(baseX2, 0, baseZ2),
+			glm::vec3(baseX1, 0, baseZ1),
+			glm::vec3(0, a_fHeight, 0)
+		);
+	}
 	// -------------------------------
 
 	// Adding information about color
@@ -276,11 +318,31 @@ void MyMesh::GenerateCylinder(float a_fRadius, float a_fHeight, int a_nSubdivisi
 	Init();
 
 	// Replace this with your code
-	Mesh* pMesh = new Mesh();
-	pMesh->GenerateCylinder(a_fRadius, a_fHeight, a_nSubdivisions, a_v3Color);
-	m_lVertexPos = pMesh->GetVertexList();
-	m_uVertexCount = m_lVertexPos.size();
-	SafeDelete(pMesh);
+	float rotation = (2 * PI) / a_nSubdivisions;
+
+	for (int i = 1; i <= a_nSubdivisions; i++)
+	{
+		float baseX1 = a_fRadius * cos(rotation * i);
+		float baseZ1 = a_fRadius * sin(rotation * i);
+		float baseX2 = a_fRadius * cos(rotation * (i + 1));
+		float baseZ2 = a_fRadius * sin(rotation * (i + 1));
+		AddTri(
+			glm::vec3(baseX1, 0, baseZ1),
+			glm::vec3(baseX2, 0, baseZ2),
+			glm::vec3(0, 0, 0)
+		);
+		AddQuad(
+			glm::vec3(baseX2, 0, baseZ2),
+			glm::vec3(baseX1, 0, baseZ1),
+			glm::vec3(baseX2, a_fHeight, baseZ2),
+			glm::vec3(baseX1, a_fHeight, baseZ1)
+		);
+		AddTri(
+			glm::vec3(baseX2, a_fHeight, baseZ2),
+			glm::vec3(baseX1, a_fHeight, baseZ1),
+			glm::vec3(0, a_fHeight, 0)
+		);
+	}
 	// -------------------------------
 
 	// Adding information about color
@@ -310,11 +372,45 @@ void MyMesh::GenerateTube(float a_fOuterRadius, float a_fInnerRadius, float a_fH
 	Init();
 
 	// Replace this with your code
-	Mesh* pMesh = new Mesh();
-	pMesh->GenerateTube(a_fOuterRadius, a_fInnerRadius, a_fHeight, a_nSubdivisions, a_v3Color);
-	m_lVertexPos = pMesh->GetVertexList();
-	m_uVertexCount = m_lVertexPos.size();
-	SafeDelete(pMesh);
+	float rotation = (2 * PI) / a_nSubdivisions;
+
+	for (int i = 1; i <= a_nSubdivisions; i++)
+	{
+		float iBaseX1 = a_fInnerRadius * cos(rotation * i);
+		float iBaseZ1 = a_fInnerRadius * sin(rotation * i);
+		float iBaseX2 = a_fInnerRadius * cos(rotation * (i + 1));
+		float iBaseZ2 = a_fInnerRadius * sin(rotation * (i + 1));
+
+		float oBaseX1 = a_fOuterRadius * cos(rotation * i);
+		float oBaseZ1 = a_fOuterRadius * sin(rotation * i);
+		float oBaseX2 = a_fOuterRadius * cos(rotation * (i + 1));
+		float oBaseZ2 = a_fOuterRadius * sin(rotation * (i + 1));
+
+		AddQuad(
+			glm::vec3(iBaseX2, 0, iBaseZ2),
+			glm::vec3(iBaseX1, 0, iBaseZ1),
+			glm::vec3(oBaseX2, 0, oBaseZ2),
+			glm::vec3(oBaseX1, 0, oBaseZ1)
+		);
+		AddQuad(
+			glm::vec3(oBaseX2, 0, oBaseZ2),
+			glm::vec3(oBaseX1, 0, oBaseZ1),
+			glm::vec3(oBaseX2, a_fHeight, oBaseZ2),
+			glm::vec3(oBaseX1, a_fHeight, oBaseZ1)
+		);
+		AddQuad(
+			glm::vec3(oBaseX2, a_fHeight, oBaseZ2),
+			glm::vec3(oBaseX1, a_fHeight, oBaseZ1),
+			glm::vec3(iBaseX2, a_fHeight, iBaseZ2),
+			glm::vec3(iBaseX1, a_fHeight, iBaseZ1)
+		);
+		AddQuad(
+			glm::vec3(iBaseX2, a_fHeight, iBaseZ2),
+			glm::vec3(iBaseX1, a_fHeight, iBaseZ1),
+			glm::vec3(iBaseX2, 0, iBaseZ2),
+			glm::vec3(iBaseX1, 0, iBaseZ1)
+		);
+	}
 	// -------------------------------
 
 	// Adding information about color
@@ -346,11 +442,37 @@ void MyMesh::GenerateTorus(float a_fOuterRadius, float a_fInnerRadius, int a_nSu
 	Init();
 
 	// Replace this with your code
-	Mesh* pMesh = new Mesh();
-	pMesh->GenerateTorus(a_fOuterRadius, a_fInnerRadius, a_nSubdivisionsA, a_nSubdivisionsB, a_v3Color);
-	m_lVertexPos = pMesh->GetVertexList();
-	m_uVertexCount = m_lVertexPos.size();
-	SafeDelete(pMesh);
+	float rotationXZ = (2 * PI) / a_nSubdivisionsA;
+	float rotationXY = (2 * PI) / a_nSubdivisionsB;
+	float ringRadius = a_fOuterRadius - a_fInnerRadius;
+	float centerOfRing = a_fInnerRadius + ringRadius;
+
+	for (int i = 1; i <= a_nSubdivisionsA; i++)
+	{
+		float centerX1 = centerOfRing * cos(rotationXZ * i);
+		float centerZ1 = centerOfRing * sin(rotationXZ * i);
+		float centerX2 = centerOfRing * cos(rotationXZ * (i + 1));
+		float centerZ2 = centerOfRing * sin(rotationXZ * (i + 1));
+		for (int j = 1; j <= a_nSubdivisionsB; j++)
+		{
+			float ringX1 = ringRadius * cos(rotationXY * j);
+			float ringY1 = ringRadius * sin(rotationXY * j);
+			float ringX2 = ringRadius * cos(rotationXY * (j + 1));
+			float ringY2 = ringRadius * sin(rotationXY * (j + 1));
+			float ringZ1 = ringX1 + centerZ1;
+			float ringZ2 = ringX2 + centerZ2;
+			ringX1 += centerX1;
+			ringX2 += centerX2;
+
+			AddQuad(
+				vector3(ringX2, ringY1, centerZ2),
+				vector3(ringX1, ringY1, centerZ1),
+				vector3(ringX1, ringY2, centerZ1),
+				vector3(ringX2, ringY2, centerZ2)
+			);
+		}
+	}
+	// for (int i = 0; i < a_n)
 	// -------------------------------
 
 	// Adding information about color
@@ -422,127 +544,4 @@ void MyMesh::GenerateSphere(float a_fRadius, int a_nSubdivisions, vector3 a_v3Co
 	// Adding information about color
 	CompleteMesh(a_v3Color);
 	CompileOpenGL3X();
-}
-void MyMesh::Render(MyCamera* a_pCamera, matrix4 a_mModel)
-{
-	Render(a_pCamera->GetProjectionMatrix(), a_pCamera->GetViewMatrix(), a_mModel);
-}
-void MyMesh::Render(matrix4 a_mProjection, matrix4 a_mView, matrix4 a_mModel)
-{
-	// Use the buffer and shader
-	GLuint nShader = m_pShaderMngr->GetShaderID("Basic");
-	glUseProgram(nShader);
-
-	//Bind the VAO of this object
-	glBindVertexArray(m_VAO);
-
-	// Get the GPU variables by their name and hook them to CPU variables
-	GLuint MVP = glGetUniformLocation(nShader, "MVP");
-	GLuint wire = glGetUniformLocation(nShader, "wire");
-
-	//Final Projection of the Camera
-	matrix4 m4MVP = a_mProjection * a_mView * a_mModel;
-	glUniformMatrix4fv(MVP, 1, GL_FALSE, glm::value_ptr(m4MVP));
-
-	//Solid
-	glUniform3f(wire, -1.0f, -1.0f, -1.0f);
-	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-	glDrawArrays(GL_TRIANGLES, 0, m_uVertexCount);
-
-	//Wire
-	glUniform3f(wire, 1.0f, 0.0f, 1.0f);
-	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-	glEnable(GL_POLYGON_OFFSET_LINE);
-	glPolygonOffset(-1.f, -1.f);
-	glDrawArrays(GL_TRIANGLES, 0, m_uVertexCount);
-	glDisable(GL_POLYGON_OFFSET_LINE);
-
-	//Set the fill back to solid
-	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-
-	glBindVertexArray(0);// Unbind VAO so it does not get in the way of other objects
-}
-void Simplex::MyMesh::Render(MyCamera * a_pCamera, std::vector<matrix4> a_ToWorldList)
-{
-	int nElements = a_ToWorldList.size();//count elements to render
-	if (nElements > 0)
-	{
-		//make an array to store the floats, each matrix has 16 of them
-		float* fTransformsArray = new float[16 * nElements];//reserve memory
-		
-		//memcpy the translated values to the array (way faster than copy element by element)
-		for (int nElement = 0; nElement < nElements; ++nElement)
-		{
-			//const float* m4MVP = glm::value_ptr(a_ToWorldList[nElement]); //ask glm for the translated value
-			memcpy(&fTransformsArray[nElement * 16], glm::value_ptr(a_ToWorldList[nElement]), 16 * sizeof(float)); //attach the value
-		}
-
-		//render
-
-		// Use the buffer and shader
-		GLuint nShader = m_pShaderMngr->GetShaderID("Basic-Instanced");
-		glUseProgram(nShader);
-
-		//Bind the VAO of this object
-		glBindVertexArray(m_VAO);
-
-		// Get the GPU variables by their name and hook them to CPU variables
-		GLuint VP = glGetUniformLocation(nShader, "VP");
-		GLuint m4ToWorld = glGetUniformLocation(nShader, "m4ToWorld");
-		GLuint wire = glGetUniformLocation(nShader, "wire");
-
-		//Final Projection of the Camera
-		matrix4 m4VP = a_pCamera->GetProjectionMatrix() * a_pCamera->GetViewMatrix();
-		glUniformMatrix4fv(VP, 1, GL_FALSE, glm::value_ptr(m4VP));
-
-		//Number of Instances
-		uint nSections = nElements / 250;
-		uint nRemainders = nElements - (250 * nSections);
-		uint nInstances = nElements;
-		for (uint n = 0; n < nSections; n++)
-		{
-			//Draw section
-			glUniformMatrix4fv(m4ToWorld, 250, GL_FALSE, &fTransformsArray[n * 250 * 16]);
-
-			//Solid
-			glUniform3f(wire, -1.0f, -1.0f, -1.0f);
-			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-			glDrawArraysInstanced(GL_TRIANGLES, 0, m_uVertexCount, 250);
-
-			//Wire
-			glUniform3f(wire, 1.0f, 0.0f, 1.0f);
-			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-			glEnable(GL_POLYGON_OFFSET_LINE);
-			glPolygonOffset(-1.f, -1.f);
-			glDrawArraysInstanced(GL_TRIANGLES, 0, m_uVertexCount, 250);
-			glDisable(GL_POLYGON_OFFSET_LINE);
-		}
-
-		//Draw reminders
-		glUniformMatrix4fv(m4ToWorld, nRemainders, GL_FALSE, &fTransformsArray[nSections * 250 * 16]);
-
-		//Solid
-		glUniform3f(wire, -1.0f, -1.0f, -1.0f);
-		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-		glDrawArraysInstanced(GL_TRIANGLES, 0, m_uVertexCount, nRemainders);
-
-		//Wire
-		glUniform3f(wire, 1.0f, 0.0f, 1.0f);
-		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-		glEnable(GL_POLYGON_OFFSET_LINE);
-		glPolygonOffset(-1.f, -1.f);
-		glDrawArraysInstanced(GL_TRIANGLES, 0, m_uVertexCount, nRemainders);
-		glDisable(GL_POLYGON_OFFSET_LINE);
-
-		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL); //Set rendering mode back to fill
-		
-		glBindVertexArray(0);//set the default VAO back
-
-		//deallocate memory
-		if (fTransformsArray)
-		{
-			delete[] fTransformsArray;
-			fTransformsArray = nullptr;
-		}
-	}
 }

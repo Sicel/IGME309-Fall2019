@@ -288,13 +288,17 @@ uint MyRigidBody::SAT(MyRigidBody* const a_pOther)
 	(eSATResults::SAT_NONE has a value of 0)
 	*/
 	#pragma region Using Real Time Collision Detection Book
-	axes[0] = glm::vec4(AXIS_X, 1.0f) * m_m4ToWorld;
-	axes[1] = glm::vec4(AXIS_Y, 1.0f) * m_m4ToWorld;
-	axes[2] = glm::vec4(AXIS_Z, 1.0f) * m_m4ToWorld;
+	vector3 axis = v3Corner[5] - v3Corner[2];
+	axes[0] = glm::vec4(vector3(axis.x, 0, 0), 1.0f);
+	axes[1] = glm::vec4(vector3(0, axis.y, 0), 1.0f);
+	axes[2] = glm::vec4(vector3(0, 0, axis.z), 1.0f);
+	//axes[0] = glm::vec4(AXIS_X, 1.0f) * m_m4ToWorld;
+	//axes[1] = glm::vec4(AXIS_Y, 1.0f) * m_m4ToWorld;
+	//axes[2] = glm::vec4(AXIS_Z, 1.0f) * m_m4ToWorld;
 
-	m_v3HalfExtentsWorld = glm::vec4(m_v3HalfWidth, 1.0f) * m_m4ToWorld;
-
-	m_v4HalfExtentsWorld = glm::vec4(m_v3HalfWidth, 1.0f) * m_m4ToWorld;
+	m_v3HalfExtentsWorld = glm::vec4(m_v3HalfWidth, 1.0f);// * m_m4ToWorld;
+														 
+	m_v4HalfExtentsWorld = glm::vec4(m_v3HalfWidth, 1.0f);// * m_m4ToWorld;
 	
 	// Code taken from "Real Time Collision Deetection" Ch.4.4
 	float ra, rb;

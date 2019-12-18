@@ -199,7 +199,6 @@ void MyCamera::RotatePitch(float vertical)
 
 void MyCamera::RotateYaw(float horizontal)
 {
-
 	m_v3Right = glm::cross(m_v3Forward, m_v3Above - m_v3Position); // sets camera's right vector
 
 	vector3 targetViewHorz = (glm::normalize(m_v3Forward) * cos(horizontal)) + (glm::normalize(m_v3Right) * sin(horizontal)); // gets the target vector

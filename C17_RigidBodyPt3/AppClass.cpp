@@ -10,17 +10,19 @@ void Application::InitVariables(void)
 	//Set the position of the light
 	m_pLightMngr->SetPosition(vector3(10.0f));
 
-	//Initialize models
+	m_v3BoxBounds = vector3(20, 20, 20); // Bounds of box
 
-	//creeper
-	m_pCreeper = new Model();
-	m_pCreeper->Load("Minecraft\\Creeper.obj");
-	m_pCreeperRB = new MyRigidBody(m_pCreeper->GetVertexList());
-
-	//steve
-	m_pSteve = new Model();
-	m_pSteve->Load("Minecraft\\Steve.obj");
-	m_pSteveRB= new MyRigidBody(m_pSteve->GetVertexList());
+	// Spawns particles at random location with different velocities
+	for (int i = 0; i < 5; i++)
+	{
+		std::srand(i);
+		m_vParticles.push_back(new Particle(0.5f));
+		float randX = std::rand() / (RAND_MAX / (0.5f * m_v3BoxBounds.x));
+		float randY = std::rand() / (RAND_MAX / (0.5f * m_v3BoxBounds.y));
+		float randZ = std::rand() / (-RAND_MAX / (0.5f * m_v3BoxBounds.z));
+		m_vParticles[i]->SetPosition(vector3(randX, randY, randZ));
+		m_vParticles[i]->SetVelocity(vector3(randX / 10, -randY / 10, randZ / 10));
+	}
 }
 void Application::Update(void)
 {
@@ -33,31 +35,27 @@ void Application::Update(void)
 	//Is the first person camera active?
 	CameraRotation();
 
-	//Set model matrix to the creeper
-	matrix4 mCreeper = glm::translate(m_v3Creeper) * ToMatrix4(m_qCreeper) * ToMatrix4(m_qArcBall);
-	m_pCreeper->SetModelMatrix(mCreeper);
-	m_pCreeperRB->SetModelMatrix(mCreeper);
-	m_pMeshMngr->AddAxisToRenderList(mCreeper);
+	// wall bouncing
+	for (int i = 0; i < m_vParticles.size(); i++)
+	{
+		if (m_vParticles[i]->MaxX() >= m_v3BoxBounds.x / 2 || m_vParticles[i]->MinX() <= -m_v3BoxBounds.x / 2)
+			m_vParticles[i]->MirrorX();
 	
-	//Set model matrix to Steve
-	matrix4 mSteve = glm::translate(vector3(2.25f, 0.0f, 0.0f)) * glm::rotate(IDENTITY_M4, glm::radians(-55.0f), AXIS_Z);
-	m_pSteve->SetModelMatrix(mSteve);
-	m_pSteveRB->SetModelMatrix(mSteve);
-	m_pMeshMngr->AddAxisToRenderList(mSteve);
+		if (m_vParticles[i]->MaxY() >= m_v3BoxBounds.y / 2 || m_vParticles[i]->MinY() <= -m_v3BoxBounds.y / 2)
+			m_vParticles[i]->MirrorY();
 	
-	bool bColliding = m_pCreeperRB->IsColliding(m_pSteveRB);
-	
-	m_pCreeper->AddToRenderList();
-	m_pCreeperRB->AddToRenderList();
+		if (m_vParticles[i]->MaxZ() >= m_v3BoxBounds.z / 2 || m_vParticles[i]->MinZ() <= -m_v3BoxBounds.z / 2)
+			m_vParticles[i]->MirrorZ();
+	}
 
-	m_pSteve->AddToRenderList();
-	m_pSteveRB->AddToRenderList();
-
-	m_pMeshMngr->Print("Colliding: ");
-	if(bColliding)
-		m_pMeshMngr->PrintLine("YES!", C_RED);
-	else
-		m_pMeshMngr->PrintLine("no", C_YELLOW);
+	// particle collision
+	for (int i = 0; i < m_vParticles.size(); i++)
+	{
+		for (int j = i + 1; j < m_vParticles.size(); j++)
+		{
+			m_vParticles[i]->Collision(m_vParticles[j]);
+		}
+	}
 }
 void Application::Display(void)
 {
@@ -65,11 +63,22 @@ void Application::Display(void)
 	ClearScreen();
 
 	//Add grid to the scene
-	m_pMeshMngr->AddGridToRenderList();
+	//m_pMeshMngr->AddGridToRenderList();
+
+	matrix4 m4Projection = m_pCameraMngr->GetProjectionMatrix();
+	matrix4 m4View = m_pCameraMngr->GetViewMatrix();
+
+	// renders particles
+	for (int i = 0; i < m_vParticles.size(); i++)
+	{
+		m_vParticles[i]->Update(m4Projection, m4View);
+	}
 
 	//Add skybox
 	m_pMeshMngr->AddSkyboxToRenderList();
-	
+
+	m_pMeshMngr->AddWireCubeToRenderList(glm::scale(m_v3BoxBounds), C_RED);
+
 	//render list call
 	m_uRenderCallCount = m_pMeshMngr->Render();
 

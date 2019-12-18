@@ -350,6 +350,8 @@ void MyRigidBody::AddToRenderList(void)
 		else
 			m_pMeshMngr->AddWireCubeToRenderList(glm::translate(m_v3CenterG) * glm::scale(m_v3ARBBSize), C_YELLOW);
 	}
+
+
 }
 bool MyRigidBody::IsInCollidingArray(MyRigidBody* a_pEntry)
 {

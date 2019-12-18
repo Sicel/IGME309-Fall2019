@@ -11,6 +11,7 @@ Date: 2017/05
 #include "imgui\ImGuiObject.h"
 
 #include "MyRigidBody.h"
+#include "Particle.h"
 namespace Simplex
 {
 
@@ -26,6 +27,12 @@ class Application
 	MyRigidBody* m_pSteveRB = nullptr; //Rigid Body of the model
 	
 	String m_sProgrammer = "Alberto Bobadilla - labigm@rit.edu"; //programmer
+	Particle* m_pParticle = nullptr;
+	MyMesh* m_pSphere = nullptr;
+
+	vector3 m_v3BoxBounds = vector3(); // Box bounds
+
+	std::vector<Particle*> m_vParticles = std::vector<Particle*>(); // Particles
 
 private:
 	static ImGuiObject gui; //GUI object
@@ -53,6 +60,7 @@ private:
 	Simplex::CameraManager* m_pCameraMngr = nullptr; //Singleton for the camera manager
 	ControllerInput* m_pController[8]; //Controller
 	uint m_uActCont = 0; //Active Controller of the Application
+
 
 public:
 #pragma region Constructor / Run / Destructor

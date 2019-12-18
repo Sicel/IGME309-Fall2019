@@ -268,7 +268,7 @@ public:
 	*/
 	void UsePhysicsSolver(bool a_bUse = true);
 
-private:
+protected:
 	/*
 	Usage: Deallocates member fields
 	Arguments: ---
